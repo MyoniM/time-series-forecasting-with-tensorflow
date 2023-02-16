@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
+    <title>Crude Oil Time Series Forecasting with TensorFlow.js - Group 4</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css" />
+    <link href="https://jinglescode.github.io/assets/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection" />
+  </head>
+  <body style="background-color: #22272e">
+    <div class="container">
+      <div class="card">
+        <div class="card-content">
+          <h1 style="text-align: center; font-size: 30px">Group 4</h1>
+          <h1 class="title grey-text text-darken-4" style="text-align: center; font-size: 30px; text-decoration: underline">
+            Crude Oil Time Series Forecasting with TensorFlow
+          </h1>
+        </div>
+        <div class="card-image">
+          <img
+            height="450"
+            src="https://149695847.v2.pressablecdn.com/wp-content/uploads/2020/12/Time-Series-forcasting.png"
+            alt="Crude Oil Time Series Forecasting with TensorFlow.js - Group 4"
+          />
+        </div>
+      </div>
+
+      <div class="card" id="div_data">
+        <div class="card-content">
+          <span class="card-title" style="font-weight: 500">Load Crude Oil Data</span>
+          <p>
+            Before we can train the neural network and make any predictions, we will first require data. The type of data we are looking for is time
+            series: a sequence of numbers in chronological order.
+          </p>
+
+          <div id="div_linegraph_data" style="width: 100%; height: 350px"></div>
+        </div>
+      </div>
+
+      <!-- E Get Crude Oil Data -->
+
+      <div class="card" id="div_sma">
+        <div class="card-content">
+          <span class="card-title" style="font-weight: 500">Simple Moving Average</span>
+          <p>
+            We are utilizing supervised learning in this experiment, which involves feeding the neural network data so that it may learn by mapping
+            the input data to the output label. Simple Moving Average can be taken out of the time series data and used to prepare the training
+            dataset.
+          </p>
+          <br />
+          <p>
+            By examining the average of all the numbers throughout that time window, the Simple Moving Average (SMA) approach can be used to determine
+            the direction of trends for a given period of time.
+          </p>
+          <br />
+          <p>
+            Now that the training dataset has been created, let's create the neural network's training data by clicking the
+            <i>Compute SMA and Draw Chart</i> button.
+          </p>
+          <br />
+          <div class="input-field">
+            <label for="input_windowsize">SMA Window Size</label>
+            <input type="number" id="input_windowsize" placeholder="a number" value="20" />
+            <small class="form-text text-muted">This is the "time window" for SMA</small>
+
+            <div>
+              <br />
+              <button class="waves-effect waves-light btn" style="background-color: red" id="btn_draw_sma" onclick="onClickDisplaySMA()">
+                Re-Compute SMA
+              </button>
+              <div class="spinner-border" id="load_draw_sma" style="display: none"></div>
+            </div>
+          </div>
+
+          <div class="row" id="div_container_sma" style="display: none">
+            <div id="div_linegraph_sma" style="width: 100%; height: 350px"></div>
+          </div>
+
+          <div id="div_container_trainingdata" style="display: none">
+            <span class="card-title grey-text text-darken-4" style="font-weight: 500">Training Data (top 10 rows)</span>
+            <div style="overflow-x: scroll" id="div_trainingdata"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="div_train">
+        <div class="card-content">
+          <span class="card-title" style="font-weight: 500">Train Neural Network</span>
+          <p>Now that we have the training data, it is time to create a model for time series prediction.</p>
+          <p>
+            Sequential model is selected which simply connects each layer and pass the data from input to the output during the training process. In
+            order for the model to learn time series data which are sequential, recurrent neural network (RNN) layer layer is created and a number of
+            LSTM cells are added to the RNN.
+          </p>
+          <br />
+          <p>
+            The model will be trained using Adam, a popular optimization algorithm. Root-means-squared error which determines the difference between
+            predicted values and the actual values, so model is able to learn by minimizing the error during the training process.
+          </p>
+          <br />
+          <p>
+            These are the hyperparameters (parameters used in the training process) available for tweaking:
+            <li>Training Dataset Size (%): the amount of data used for training, and remaining data will be used for prediction</li>
+            <li>
+              Epochs: number of times the dataset is used to train the model (<a
+                href="https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/"
+                target="_blank"
+                >learn more</a
+              >)
+            </li>
+            <li>
+              Learning Rate: amount of change in the weights during training in each step (<a
+                href="https://machinelearningmastery.com/learning-rate-for-deep-learning-neural-networks/"
+                target="_blank"
+                >learn more</a
+              >)
+            </li>
+            <li>
+              Hidden LSTM Layers: to increase the model complexity to learn in higher dimensional space (<a
+                href="https://machinelearningmastery.com/how-to-configure-the-number-of-layers-and-nodes-in-a-neural-network/"
+                target="_blank"
+                >learn more</a
+              >)
+            </li>
+          </p>
+
+          <br />
+
+          <p>Tweak the parameters and then hit <i>Train Model</i> button.</p>
+          <br />
+          <div class="row" id="div_container_trainfirst">
+            <div class="col s12">
+              <p>Need training data? Explore the previous section to <a href="#div_sma">prepare training data</a>.</p>
+            </div>
+          </div>
+
+          <div id="div_container_train" style="display: none">
+            <div class="row">
+              <div class="col s3">
+                <div class="input-field col s12">
+                  <label for="input_trainingsize">Training size (%)</label>
+                  <input type="number" id="input_trainingsize" placeholder="Training size (%)" value="90" />
+                </div>
+              </div>
+              <div class="col s3">
+                <div class="input-field col s12">
+                  <label for="input_epochs">Epochs</label>
+                  <input type="number" id="input_epochs" placeholder="Epochs" value="10" />
+                </div>
+              </div>
+              <div class="col s3">
+                <div class="input-field col s12">
+                  <label for="input_learningrate">Learning Rate</label>
+                  <input type="number" id="input_learningrate" placeholder="Learning Rate" value="0.01" />
+                  <small class="form-text text-muted">Typically range between 0.01 and 0.1</small>
+                </div>
+              </div>
+              <div class="col s3">
+                <div class="input-field col s12">
+                  <label for="input_hiddenlayers">Hidden LSTM Layers</label>
+                  <input type="number" id="input_hiddenlayers" placeholder="Hidden LSTM Layers" value="4" />
+                  <small class="form-text text-muted">Number of LSTM layers</small>
+                </div>
+              </div>
+              <div class="col s12">
+                <button class="waves-effect waves-light btn" id="btn_draw_trainmodel" style="background-color: red" onclick="onClickTrainModel()">
+                  Train Model
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" id="div_container_training" style="display: none">
+            <div class="col s12">
+              <div class="">
+                <span class="card-title grey-text text-darken-4" style="font-weight: 500">Train Model</span>
+                <h6>Progress</h6>
+
+                <div class="progress">
+                  <div class="determinate" id="div_training_progressbar" style="width: 100%"></div>
+                </div>
+                <hr />
+                <h6>Loss</h6>
+                <div id="div_linegraph_trainloss" style="width: 100%; height: 250px"></div>
+                <hr />
+                <h6>Logs</h6>
+                <div id="div_traininglog" style="overflow-x: scroll; overflow-y: scroll; height: 250px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-weight: 500">Validation</span>
+          <p>The model will automatically validate values ones the training is done. The result will be displayed below.</p>
+          <!-- <p>
+            Now that you have trained your model, it is time to use the model.predict function from TFJS to predicting future values. We have split
+            the data into 2 sets, a subset of the data is training and the rest is the validation set. The training set has been used for training the
+            model, thus will be using the validation set to validate the model. Since the model has not seen the data in the validation set before, it
+            will be good if the model is able to predict values that are close to the exact values.
+          </p> -->
+          <!-- <p>
+            So let us use the remaining data for prediction which allow us to see how closely our predicted values are compared to the actual values.
+          </p>
+          <p>
+            But if the model did not predict values that map closely to its true values, check the training loss graph. Generally, this model should
+            converge with the loss to be less than 1. You can increase the number of epochs, or tweak the other learning hyperparameters.
+          </p> -->
+
+          <div class="row" id="div_container_validating" style="display: none">
+            <div class="col s12">
+              <div id="div_validation_graph"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title" style="font-weight: 500">Make Prediction</span>
+          <p>Finally, the model will predict the value for the next week.</p>
+        </div>
+        <div class="row" id="div_container_predicting" style="display: none">
+          <div class="col s12">
+            <div id="div_prediction_graph"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://jinglescode.github.io/assets/js/materialize.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+
+    <script src="./model.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>
